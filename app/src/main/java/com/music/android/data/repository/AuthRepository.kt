@@ -8,8 +8,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.music.android.data.api.ApiService
+import com.music.android.data.api.AuthRequest
 import com.music.android.data.model.AuthProvider
-import com.music.android.data.model.AuthRequest
 import com.music.android.data.model.AuthUser
 import com.music.android.data.model.User
 import kotlinx.coroutines.CoroutineScope

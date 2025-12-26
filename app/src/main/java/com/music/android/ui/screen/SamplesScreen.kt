@@ -116,7 +116,7 @@ fun ShortCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .fillParentMaxHeight()
+            .fillMaxHeight()
     ) {
         // Cover/Video
         AsyncImage(

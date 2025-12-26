@@ -89,7 +89,8 @@ fun DiscoverRow(
                 librarySongs.firstOrNull()?.let {
                     songManagerViewModel.playSong(it, librarySongs)
                 }
-            }
+            },
+            modifier = Modifier.weight(1f)
         )
         DiscoverCard(
             title = "For You",
@@ -99,7 +100,8 @@ fun DiscoverRow(
                 librarySongs.firstOrNull()?.let {
                     songManagerViewModel.playSong(it, librarySongs)
                 }
-            }
+            },
+            modifier = Modifier.weight(1f)
         )
         DiscoverCard(
             title = "Trends",
@@ -109,7 +111,8 @@ fun DiscoverRow(
                 librarySongs.randomOrNull()?.let {
                     songManagerViewModel.playSong(it, librarySongs.shuffled())
                 }
-            }
+            },
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -119,11 +122,11 @@ fun DiscoverCard(
     title: String,
     subtitle: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
-            .weight(1f)
+        modifier = modifier
             .height(120.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
