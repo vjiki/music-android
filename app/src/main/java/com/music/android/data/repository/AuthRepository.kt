@@ -47,6 +47,15 @@ class AuthRepository(
         initialValue = false
     )
     
+    // Get effective user (guest if not authenticated)
+    val effectiveUser: AuthUser
+        get() = _currentUser.value?.takeIf { it.provider != AuthProvider.GUEST }
+            ?: getEffectiveUser()
+    
+    // Get current user ID, defaulting to guest user if not logged in
+    val currentUserId: String
+        get() = _currentUser.value?.id ?: GUEST_USER_ID
+    
     init {
         loadUser()
     }
@@ -57,7 +66,9 @@ class AuthRepository(
                 val userJson = preferences[USER_KEY]
                 val user = userJson?.let { json ->
                     try {
-                        gson.fromJson(json, AuthUser::class.java)
+                        val loadedUser = gson.fromJson(json, AuthUser::class.java)
+                        // Don't load guest users from storage
+                        if (loadedUser.provider == AuthProvider.GUEST) null else loadedUser
                     } catch (e: Exception) {
                         null
                     }
@@ -68,11 +79,6 @@ class AuthRepository(
     }
 
     suspend fun getCurrentUser(): AuthUser? = currentUser.first()
-
-    suspend fun getCurrentUserId(): String {
-        val user = getCurrentUser()
-        return user?.id ?: GUEST_USER_ID
-    }
 
     suspend fun signInWithEmail(email: String, password: String): Result<AuthUser> {
         return try {

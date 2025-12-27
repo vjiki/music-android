@@ -127,8 +127,8 @@ fun TrackRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = song.cover,
-            contentDescription = song.title,
+            model = song.cover ?: "",
+            contentDescription = song.title ?: "Song",
             modifier = Modifier
                 .size(60.dp)
                 .clip(RoundedCornerShape(8.dp)),
@@ -136,12 +136,12 @@ fun TrackRow(
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = song.title,
+                text = song.title ?: "Unknown",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White
             )
             Text(
-                text = song.artist,
+                text = song.artist ?: "Unknown Artist",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.7f)
             )

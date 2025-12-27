@@ -42,13 +42,13 @@ interface ApiService {
     @POST("/api/v1/songs/{songId}/like")
     suspend fun likeSong(
         @Path("songId") songId: String,
-        @Body request: LikeRequest
+        @Body request: SongLikeRequest
     ): Response<Unit>
 
     @POST("/api/v1/songs/{songId}/dislike")
     suspend fun dislikeSong(
         @Path("songId") songId: String,
-        @Body request: LikeRequest
+        @Body request: SongLikeRequest
     ): Response<Unit>
 }
 
@@ -63,7 +63,8 @@ data class AuthResponse(
     val message: String
 )
 
-data class LikeRequest(
-    val userId: String
+data class SongLikeRequest(
+    val userId: String,
+    val songId: String
 )
 

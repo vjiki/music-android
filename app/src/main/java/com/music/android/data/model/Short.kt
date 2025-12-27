@@ -14,7 +14,7 @@ data class ShortModel(
     val type: String, // "SONG" or "SHORT_VIDEO"
     val isLiked: Boolean = false,
     val isDisliked: Boolean = false,
-    val likesCount: Int = 0,
-    val dislikesCount: Int = 0
+    val likesCount: Long = 0L,
+    val dislikesCount: Long = 0L
 )
 

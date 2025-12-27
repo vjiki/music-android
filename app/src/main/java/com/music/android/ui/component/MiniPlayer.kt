@@ -44,8 +44,8 @@ fun MiniPlayer(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             AsyncImage(
-                model = song.cover,
-                contentDescription = song.title,
+                model = song.cover ?: "",
+                contentDescription = song.title ?: "Song",
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(8.dp)),
@@ -53,13 +53,13 @@ fun MiniPlayer(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = song.title,
+                    text = song.title ?: "Unknown",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = song.artist,
+                    text = song.artist ?: "Unknown Artist",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.7f)
                 )

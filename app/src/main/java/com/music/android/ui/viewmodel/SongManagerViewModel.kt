@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class SongManagerViewModel(
-    private val authRepository: AuthRepository,
+    val authRepository: AuthRepository,
     private val mediaPlayerService: MediaPlayerService
 ) : ViewModel() {
     
@@ -64,18 +64,26 @@ class SongManagerViewModel(
     fun loadSongs() {
         viewModelScope.launch {
             try {
-                val userId = authRepository.getCurrentUserId()
+                val userId = authRepository.currentUserId
                 val response = RetrofitClient.apiService.getSongs(userId)
                 if (response.isSuccessful) {
                     _librarySongs.value = response.body() ?: emptyList()
+                } else {
+                    // If API fails, use empty list (iOS uses fallback songs, but we'll keep empty for now)
+                    _librarySongs.value = emptyList()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                // On error, use empty list
+                _librarySongs.value = emptyList()
             }
         }
     }
     
     fun playSong(song: Song, playlist: List<Song>? = null) {
+        // Only play if song has audio URL
+        if (song.audioUrl.isNullOrEmpty()) return
+        
         val targetPlaylist = playlist ?: _playlist.value
         val finalPlaylist = if (targetPlaylist.isEmpty() || !targetPlaylist.contains(song)) {
             targetPlaylist + song
@@ -133,8 +141,11 @@ class SongManagerViewModel(
     fun toggleLike(song: Song) {
         viewModelScope.launch {
             try {
-                val userId = authRepository.getCurrentUserId()
-                RetrofitClient.apiService.likeSong(song.id, com.music.android.data.api.LikeRequest(userId))
+                val userId = authRepository.currentUserId
+                RetrofitClient.apiService.likeSong(
+                    song.id,
+                    com.music.android.data.api.SongLikeRequest(userId = userId, songId = song.id)
+                )
                 loadSongs() // Refresh to get updated counts
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -145,8 +156,11 @@ class SongManagerViewModel(
     fun toggleDislike(song: Song) {
         viewModelScope.launch {
             try {
-                val userId = authRepository.getCurrentUserId()
-                RetrofitClient.apiService.dislikeSong(song.id, com.music.android.data.api.LikeRequest(userId))
+                val userId = authRepository.currentUserId
+                RetrofitClient.apiService.dislikeSong(
+                    song.id,
+                    com.music.android.data.api.SongLikeRequest(userId = userId, songId = song.id)
+                )
                 loadSongs() // Refresh to get updated counts
             } catch (e: Exception) {
                 e.printStackTrace()

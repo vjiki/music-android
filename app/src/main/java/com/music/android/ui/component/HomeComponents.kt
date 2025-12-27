@@ -73,8 +73,16 @@ fun StoriesSection(
 @Composable
 fun DiscoverRow(
     librarySongs: List<Song>,
-    songManagerViewModel: SongManagerViewModel
+    songManagerViewModel: SongManagerViewModel,
+    isAuthenticated: Boolean
 ) {
+    // Get My Vibe song - most liked for authenticated, first for guest
+    val myVibeSong = if (isAuthenticated && librarySongs.isNotEmpty()) {
+        librarySongs.maxByOrNull { it.likesCount }
+    } else {
+        librarySongs.firstOrNull()
+    }
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -83,10 +91,12 @@ fun DiscoverRow(
     ) {
         DiscoverCard(
             title = "My Vibe",
-            subtitle = librarySongs.firstOrNull()?.title ?: "Breathe with me",
+            subtitle = myVibeSong?.title ?: "Breathe with me",
             icon = Icons.Default.PlayArrow,
             onClick = {
-                librarySongs.firstOrNull()?.let {
+                myVibeSong?.let {
+                    songManagerViewModel.playSong(it, librarySongs)
+                } ?: librarySongs.firstOrNull()?.let {
                     songManagerViewModel.playSong(it, librarySongs)
                 }
             },
@@ -261,8 +271,8 @@ fun QuickPlayItem(song: Song, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             AsyncImage(
-                model = song.cover,
-                contentDescription = song.title,
+                model = song.cover ?: "",
+                contentDescription = song.title ?: "Song",
                 modifier = Modifier
                     .size(60.dp)
                     .clip(RoundedCornerShape(12.dp)),
@@ -270,13 +280,13 @@ fun QuickPlayItem(song: Song, onClick: () -> Unit) {
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = song.title,
+                    text = song.title ?: "Unknown",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = song.artist,
+                    text = song.artist ?: "Unknown Artist",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.7f)
                 )
@@ -338,8 +348,8 @@ fun MixItem(song: Song, onClick: () -> Unit) {
             .clickable(onClick = onClick)
     ) {
         AsyncImage(
-            model = song.cover,
-            contentDescription = song.title,
+            model = song.cover ?: "",
+            contentDescription = song.title ?: "Song",
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
@@ -348,13 +358,13 @@ fun MixItem(song: Song, onClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = song.title,
+            text = song.title ?: "Unknown",
             style = MaterialTheme.typography.titleMedium,
             color = Color.White,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = song.artist,
+            text = song.artist ?: "Unknown Artist",
             style = MaterialTheme.typography.bodySmall,
             color = Color.White.copy(alpha = 0.7f)
         )

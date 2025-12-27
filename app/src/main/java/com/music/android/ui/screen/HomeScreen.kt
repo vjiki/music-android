@@ -105,9 +105,11 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             // Discover cards
+            val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
             DiscoverRow(
                 librarySongs = librarySongs,
-                songManagerViewModel = songManagerViewModel
+                songManagerViewModel = songManagerViewModel,
+                isAuthenticated = isAuthenticated
             )
             
             Spacer(modifier = Modifier.height(24.dp))

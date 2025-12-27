@@ -16,6 +16,12 @@ class AuthViewModel(
     val currentUser: StateFlow<AuthUser?> = authRepository.currentUser
     val isAuthenticated: StateFlow<Boolean> = authRepository.isAuthenticated
     
+    val effectiveUser: AuthUser
+        get() = authRepository.effectiveUser
+    
+    val currentUserId: String
+        get() = authRepository.currentUserId
+    
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     
@@ -41,10 +47,6 @@ class AuthViewModel(
         viewModelScope.launch {
             authRepository.signOut()
         }
-    }
-    
-    fun getEffectiveUser(): AuthUser {
-        return authRepository.getEffectiveUser()
     }
 }
 

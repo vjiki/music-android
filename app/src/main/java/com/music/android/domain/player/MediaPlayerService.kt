@@ -26,7 +26,9 @@ class MediaPlayerService(context: Context) {
     
     fun loadSong(song: Song) {
         currentSong = song
-        val mediaItem = MediaItem.fromUri(song.audioUrl)
+        val audioUrl = song.audioUrl ?: return
+        if (audioUrl.isEmpty()) return
+        val mediaItem = MediaItem.fromUri(audioUrl)
         player.setMediaItem(mediaItem)
         player.prepare()
     }

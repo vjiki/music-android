@@ -31,6 +31,8 @@ fun ProfileScreen(
     songManagerViewModel: SongManagerViewModel
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
+    val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
+    val effectiveUser = authViewModel.effectiveUser
     val librarySongs by songManagerViewModel.librarySongs.collectAsState()
     val likedSongs = librarySongs.filter { it.isLiked }
     val dislikedSongs = librarySongs.filter { it.isDisliked }
@@ -73,9 +75,9 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (currentUser?.avatarUrl != null && currentUser?.avatarUrl?.isNotEmpty() == true) {
+                    if (effectiveUser.avatarUrl != null && effectiveUser.avatarUrl.isNotEmpty()) {
                         AsyncImage(
-                            model = currentUser?.avatarUrl,
+                            model = effectiveUser.avatarUrl,
                             contentDescription = "Avatar",
                             modifier = Modifier
                                 .size(80.dp)
@@ -92,14 +94,20 @@ fun ProfileScreen(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = currentUser?.nickname ?: currentUser?.name ?: "Music Lover",
+                        text = authViewModel.effectiveUser.nickname 
+                            ?: authViewModel.effectiveUser.name 
+                            ?: "Music Lover",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = currentUser?.email ?: "Guest",
+                        text = if (authViewModel.isAuthenticated.value) {
+                            authViewModel.currentUser.value?.email ?: "Guest"
+                        } else {
+                            "Guest"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.6f)
                     )
@@ -210,8 +218,8 @@ fun LikedSongRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = song.cover,
-            contentDescription = song.title,
+            model = song.cover ?: "",
+            contentDescription = song.title ?: "Song",
             modifier = Modifier
                 .size(50.dp)
                 .clip(RoundedCornerShape(8.dp)),
@@ -219,13 +227,13 @@ fun LikedSongRow(
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = song.title,
+                text = song.title ?: "Unknown",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = song.artist,
+                text = song.artist ?: "Unknown Artist",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.White.copy(alpha = 0.7f)
             )

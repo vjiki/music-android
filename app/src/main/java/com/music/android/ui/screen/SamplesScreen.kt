@@ -38,8 +38,8 @@ fun SamplesScreen(
     LaunchedEffect(Unit) {
         scope.launch {
             try {
-                // Get userId from auth repository - need to pass it through
-                val response = RetrofitClient.apiService.getShorts("3762deba-87a9-482e-b716-2111232148ca")
+                val userId = songManagerViewModel.authRepository.currentUserId
+                val response = RetrofitClient.apiService.getShorts(userId)
                 if (response.isSuccessful) {
                     shorts = response.body() ?: emptyList()
                 }
@@ -78,9 +78,13 @@ fun SamplesScreen(
                         onLike = {
                             scope.launch {
                                 try {
+                                    val userId = songManagerViewModel.authRepository.currentUserId
                                     RetrofitClient.apiService.likeSong(
                                         shorts[index].id,
-                                        com.music.android.data.api.LikeRequest("3762deba-87a9-482e-b716-2111232148ca")
+                                        com.music.android.data.api.SongLikeRequest(
+                                            userId = userId,
+                                            songId = shorts[index].id
+                                        )
                                     )
                                 } catch (e: Exception) {
                                     e.printStackTrace()
@@ -90,9 +94,13 @@ fun SamplesScreen(
                         onDislike = {
                             scope.launch {
                                 try {
+                                    val userId = songManagerViewModel.authRepository.currentUserId
                                     RetrofitClient.apiService.dislikeSong(
                                         shorts[index].id,
-                                        com.music.android.data.api.LikeRequest("3762deba-87a9-482e-b716-2111232148ca")
+                                        com.music.android.data.api.SongLikeRequest(
+                                            userId = userId,
+                                            songId = shorts[index].id
+                                        )
                                     )
                                 } catch (e: Exception) {
                                     e.printStackTrace()
