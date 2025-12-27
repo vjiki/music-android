@@ -37,111 +37,118 @@ fun HomeScreen(
     
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Mini player above bottom navigation
+                if (currentSong != null) {
+                    MiniPlayer(
+                        song = currentSong!!,
+                        isPlaying = isPlaying,
+                        songManagerViewModel = songManagerViewModel,
+                        onExpand = { /* Navigate to full player */ }
+                    )
+                }
+                BottomNavigationBar(navController)
+            }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-        ) {
-            // Top bar with actions
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
             ) {
-                IconButton(onClick = { 
-                    currentSong?.let { songManagerViewModel.toggleDislike(it) }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
-                        contentDescription = "Dislike",
-                        tint = Color.White
-                    )
+                // Top bar with actions
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { 
+                        currentSong?.let { songManagerViewModel.toggleDislike(it) }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.FavoriteBorder,
+                            contentDescription = "Dislike",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = { 
+                        currentSong?.let { songManagerViewModel.toggleLike(it) }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "Like",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = { showMessages = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Message,
+                            contentDescription = "Messages",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = { showSearch = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = { showPlaylists = true }) {
+                        Icon(
+                            imageVector = Icons.Default.List,
+                            contentDescription = "Playlists",
+                            tint = Color.White
+                        )
+                    }
                 }
-                IconButton(onClick = { 
-                    currentSong?.let { songManagerViewModel.toggleLike(it) }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Like",
-                        tint = Color.White
-                    )
-                }
-                IconButton(onClick = { showMessages = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Message,
-                        contentDescription = "Messages",
-                        tint = Color.White
-                    )
-                }
-                IconButton(onClick = { showSearch = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = Color.White
-                    )
-                }
-                IconButton(onClick = { showPlaylists = true }) {
-                    Icon(
-                        imageVector = Icons.Default.List,
-                        contentDescription = "Playlists",
-                        tint = Color.White
-                    )
+                
+                // Stories section
+                StoriesSection(
+                    authViewModel = authViewModel,
+                    songManagerViewModel = songManagerViewModel
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Discover cards
+                val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
+                DiscoverRow(
+                    librarySongs = librarySongs,
+                    songManagerViewModel = songManagerViewModel,
+                    isAuthenticated = isAuthenticated
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Tags
+                TagsSection()
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Quick Play
+                QuickPlaySection(
+                    songs = librarySongs,
+                    songManagerViewModel = songManagerViewModel
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Mixes
+                MixesSection(
+                    songs = librarySongs,
+                    songManagerViewModel = songManagerViewModel
+                )
+                
+                // Add bottom padding to account for mini player
+                if (currentSong != null) {
+                    Spacer(modifier = Modifier.height(74.dp))
                 }
             }
-            
-            // Stories section
-            StoriesSection(
-                authViewModel = authViewModel,
-                songManagerViewModel = songManagerViewModel
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Discover cards
-            val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
-            DiscoverRow(
-                librarySongs = librarySongs,
-                songManagerViewModel = songManagerViewModel,
-                isAuthenticated = isAuthenticated
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Tags
-            TagsSection()
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Quick Play
-            QuickPlaySection(
-                songs = librarySongs,
-                songManagerViewModel = songManagerViewModel
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Mixes
-            MixesSection(
-                songs = librarySongs,
-                songManagerViewModel = songManagerViewModel
-            )
-        }
-        
-        // Mini player
-        if (currentSong != null) {
-            MiniPlayer(
-                song = currentSong!!,
-                isPlaying = isPlaying,
-                songManagerViewModel = songManagerViewModel,
-                onExpand = { /* Navigate to full player */ }
-            )
         }
     }
     

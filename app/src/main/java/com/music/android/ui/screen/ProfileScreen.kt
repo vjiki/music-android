@@ -39,6 +39,16 @@ fun ProfileScreen(
     
     var showSettings by remember { mutableStateOf(false) }
     
+    // Settings sheet
+    if (showSettings) {
+        SettingsScreen(
+            navController = navController,
+            authViewModel = authViewModel,
+            songManagerViewModel = songManagerViewModel,
+            onDismiss = { showSettings = false }
+        )
+    }
+    
     Scaffold(
         topBar = {
             TopAppBar(
