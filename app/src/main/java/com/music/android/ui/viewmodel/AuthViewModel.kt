@@ -43,6 +43,21 @@ class AuthViewModel(
         }
     }
     
+    fun signInWithGoogle(googleUser: com.music.android.data.model.AuthUser) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            authRepository.signInWithGoogle(googleUser)
+                .onSuccess {
+                    _isLoading.value = false
+                }
+                .onFailure {
+                    _isLoading.value = false
+                    _error.value = it.message ?: "Google sign in failed"
+                }
+        }
+    }
+    
     fun signOut() {
         viewModelScope.launch {
             authRepository.signOut()

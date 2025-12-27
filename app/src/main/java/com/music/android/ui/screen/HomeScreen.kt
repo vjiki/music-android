@@ -43,7 +43,7 @@ fun HomeScreen(
                         onExpand = { }
                     )
                 }
-                BottomNavigationBar(navController)
+                BottomNavigationBar(navController, currentRoute = "home")
             }
         }
     ) { paddingValues ->
@@ -61,24 +61,39 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = {
-                    currentSong?.let { songManagerViewModel.toggleDislike(it) }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
-                        contentDescription = "Dislike",
-                        tint = Color.White
-                    )
+                Spacer(modifier = Modifier.weight(1f))
+                // Dislike button
+                currentSong?.let { song ->
+                    val dislikeIconSize = songManagerViewModel.dislikeIconSize(song)
+                    IconButton(
+                        onClick = { songManagerViewModel.toggleDislike(song) },
+                        modifier = Modifier.size((dislikeIconSize + 8).dp)
+                    ) {
+                        Icon(
+                            imageVector = if (song.isDisliked) Icons.Default.Block else Icons.Default.ThumbDown,
+                            contentDescription = "Dislike",
+                            tint = if (song.isDisliked) Color.Red else Color.White,
+                            modifier = Modifier.size(dislikeIconSize.dp)
+                        )
+                    }
                 }
 
-                IconButton(onClick = {
-                    currentSong?.let { songManagerViewModel.toggleLike(it) }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Like",
-                        tint = Color.White
-                    )
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Like button
+                currentSong?.let { song ->
+                    val likeIconSize = songManagerViewModel.likeIconSize(song)
+                    IconButton(
+                        onClick = { songManagerViewModel.toggleLike(song) },
+                        modifier = Modifier.size((likeIconSize + 8).dp)
+                    ) {
+                        Icon(
+                            imageVector = if (song.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Like",
+                            tint = if (song.isLiked) Color(0xFFFF1493) else Color.White,
+                            modifier = Modifier.size(likeIconSize.dp)
+                        )
+                    }
                 }
 
                 IconButton(onClick = { showMessages = true }) {
@@ -151,7 +166,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
+fun BottomNavigationBar(navController: NavController, currentRoute: String = "home") {
     NavigationBar(
         containerColor = Color.Black.copy(alpha = 0.95f),
         contentColor = Color.White
@@ -159,19 +174,19 @@ fun BottomNavigationBar(navController: NavController) {
         NavigationBarItem(
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { Text("Home") },
-            selected = true,
+            selected = currentRoute == "home",
             onClick = { navController.navigate("home") }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Samples") },
             label = { Text("Samples") },
-            selected = false,
+            selected = currentRoute == "samples",
             onClick = { navController.navigate("samples") }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
             label = { Text("Profile") },
-            selected = false,
+            selected = currentRoute == "profile",
             onClick = { navController.navigate("profile") }
         )
     }

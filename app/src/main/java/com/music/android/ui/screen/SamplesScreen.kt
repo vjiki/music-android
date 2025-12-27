@@ -85,86 +85,93 @@ fun SamplesScreen(
         }
     }
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White
-            )
-        } else if (shorts.isEmpty()) {
-            Text(
-                text = "No shorts available",
-                color = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier.align(Alignment.Center)
-            )
-        } else {
-            val pagerState = rememberPagerState(
-                initialPage = 0,
-                pageCount = { shorts.size }
-            )
-            
-            // Track page changes
-            LaunchedEffect(pagerState.currentPage) {
-                val newIndex = pagerState.currentPage
-                if (newIndex != currentIndex && newIndex >= 0 && newIndex < shorts.size) {
-                    currentIndex = newIndex
-                    if (newIndex != lastPlayedIndex) {
-                        scope.launch {
-                            samplesPlayer.loadShort(shorts[newIndex])
-                            if (shorts[newIndex].type != "SHORT_VIDEO") {
-                                samplesPlayer.play()
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController, currentRoute = "samples")
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .padding(paddingValues)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White
+                )
+            } else if (shorts.isEmpty()) {
+                Text(
+                    text = "No shorts available",
+                    color = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                val pagerState = rememberPagerState(
+                    initialPage = 0,
+                    pageCount = { shorts.size }
+                )
+                
+                // Track page changes
+                LaunchedEffect(pagerState.currentPage) {
+                    val newIndex = pagerState.currentPage
+                    if (newIndex != currentIndex && newIndex >= 0 && newIndex < shorts.size) {
+                        currentIndex = newIndex
+                        if (newIndex != lastPlayedIndex) {
+                            scope.launch {
+                                samplesPlayer.loadShort(shorts[newIndex])
+                                if (shorts[newIndex].type != "SHORT_VIDEO") {
+                                    samplesPlayer.play()
+                                }
                             }
+                            lastPlayedIndex = newIndex
                         }
-                        lastPlayedIndex = newIndex
                     }
                 }
-            }
-            
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                ShortCard(
-                    short = shorts[page],
-                    isActive = page == currentIndex,
-                    samplesPlayer = samplesPlayer,
-                    onLike = {
-                        scope.launch {
-                            try {
-                                val userId = songManagerViewModel.authRepository.currentUserId
-                                RetrofitClient.apiService.likeSong(
-                                    shorts[page].id,
-                                    com.music.android.data.api.SongLikeRequest(
-                                        userId = userId,
-                                        songId = shorts[page].id
+                
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    ShortCard(
+                        short = shorts[page],
+                        isActive = page == currentIndex,
+                        samplesPlayer = samplesPlayer,
+                        onLike = {
+                            scope.launch {
+                                try {
+                                    val userId = songManagerViewModel.authRepository.currentUserId
+                                    RetrofitClient.apiService.likeSong(
+                                        shorts[page].id,
+                                        com.music.android.data.api.SongLikeRequest(
+                                            userId = userId,
+                                            songId = shorts[page].id
+                                        )
                                     )
-                                )
-                            } catch (e: Exception) {
-                                e.printStackTrace()
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        },
+                        onDislike = {
+                            scope.launch {
+                                try {
+                                    val userId = songManagerViewModel.authRepository.currentUserId
+                                    RetrofitClient.apiService.dislikeSong(
+                                        shorts[page].id,
+                                        com.music.android.data.api.SongLikeRequest(
+                                            userId = userId,
+                                            songId = shorts[page].id
+                                        )
+                                    )
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
                             }
                         }
-                    },
-                    onDislike = {
-                        scope.launch {
-                            try {
-                                val userId = songManagerViewModel.authRepository.currentUserId
-                                RetrofitClient.apiService.dislikeSong(
-                                    shorts[page].id,
-                                    com.music.android.data.api.SongLikeRequest(
-                                        userId = userId,
-                                        songId = shorts[page].id
-                                    )
-                                )
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }

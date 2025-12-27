@@ -174,6 +174,20 @@ class SongManagerViewModel(
     val dislikedSongs: List<Song>
         get() = _librarySongs.value.filter { it.isDisliked }
     
+    // Calculate icon size based on like/dislike count (matching iOS behavior)
+    fun iconSize(count: Long, baseSize: Float = 24f): Float {
+        return when {
+            count >= 50 -> baseSize * 1.4f  // Max size at 50+
+            count >= 30 -> baseSize * 1.3f  // Bigger at 30+
+            count >= 20 -> baseSize * 1.2f  // Bigger at 20+
+            count >= 10 -> baseSize * 1.1f  // Slightly bigger at 10+
+            else -> baseSize  // Default size
+        }
+    }
+    
+    fun likeIconSize(song: Song): Float = iconSize(song.likesCount)
+    fun dislikeIconSize(song: Song): Float = iconSize(song.dislikesCount)
+    
     override fun onCleared() {
         super.onCleared()
         mediaPlayerService.release()
