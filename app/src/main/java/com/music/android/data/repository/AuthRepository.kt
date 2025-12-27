@@ -11,11 +11,9 @@ import com.music.android.data.api.ApiService
 import com.music.android.data.api.AuthRequest
 import com.music.android.data.model.AuthProvider
 import com.music.android.data.model.AuthUser
-import com.music.android.data.model.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,7 +48,7 @@ class AuthRepository(
     // Get effective user (guest if not authenticated)
     val effectiveUser: AuthUser
         get() = _currentUser.value?.takeIf { it.provider != AuthProvider.GUEST }
-            ?: getEffectiveUser()
+            ?: fetchEffectiveUser()
     
     // Get current user ID, defaulting to guest user if not logged in
     val currentUserId: String
@@ -133,7 +131,7 @@ class AuthRepository(
         }
     }
 
-    fun getEffectiveUser(): AuthUser {
+    fun fetchEffectiveUser(): AuthUser {
         return AuthUser(
             id = GUEST_USER_ID,
             email = "guest@example.com",

@@ -36,8 +36,8 @@ fun SearchScreen(
         librarySongs
     } else {
         librarySongs.filter {
-            it.title.contains(searchText, ignoreCase = true) ||
-            it.artist.contains(searchText, ignoreCase = true)
+            (it.title?.contains(searchText, ignoreCase = true) == true) ||
+                    (it.artist?.contains(searchText, ignoreCase = true) == true)
         }
     }
     
