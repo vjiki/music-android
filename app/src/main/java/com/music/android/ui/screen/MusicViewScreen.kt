@@ -43,29 +43,66 @@ fun MusicViewScreen(
     
     var offsetY by remember { mutableStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
+    var isSliderDragging by remember { mutableStateOf(false) }
+    
+    // Initialize slider value based on current position
+    val initialSliderValue = remember(currentSong?.id, duration) {
+        if (duration > 0 && currentPosition > 0) {
+            (currentPosition.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
+        } else {
+            0f
+        }
+    }
+    var sliderValue by remember { mutableStateOf(initialSliderValue) }
     
     if (currentSong == null) {
-        navController.popBackStack()
+        LaunchedEffect(Unit) {
+            navController.popBackStack()
+        }
         return
     }
     
     val song = currentSong!!
     
-    // Format time
-    val formattedCurrentTime = formatTime(currentPosition)
-    val formattedDuration = formatTime(duration)
+    // Update slider value only when not dragging by user
+    LaunchedEffect(currentPosition, duration, isSliderDragging) {
+        if (!isSliderDragging && duration > 0) {
+            sliderValue = (currentPosition.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
+        }
+    }
     
-    // Calculate progress (0f to 1f)
-    val progress = if (duration > 0) {
-        (currentPosition.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
-    } else {
-        0f
+    // Format time - memoize to avoid recalculation
+    val formattedCurrentTime = remember(currentPosition) {
+        formatTime(currentPosition)
+    }
+    val formattedDuration = remember(duration) {
+        formatTime(duration)
     }
     
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = {
+                        if (offsetY > size.height * 0.4f) {
+                            navController.popBackStack()
+                        } else {
+                            offsetY = 0f
+                        }
+                        isDragging = false
+                    }
+                ) { change, dragAmount ->
+                    if (!isDragging) {
+                        isDragging = true
+                    }
+                    // Only allow downward drag from lower area
+                    if (change.position.y > 100 && dragAmount.y > 0) {
+                        offsetY = (offsetY + dragAmount.y).coerceAtLeast(0f)
+                    }
+                }
+            }
     ) {
         // Gradient overlay
         Box(
@@ -86,26 +123,6 @@ fun MusicViewScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .offset(y = offsetY.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = {
-                            if (offsetY > size.height * 0.4f) {
-                                navController.popBackStack()
-                            } else {
-                                offsetY = 0f
-                            }
-                            isDragging = false
-                        }
-                    ) { change, dragAmount ->
-                        if (!isDragging) {
-                            isDragging = true
-                        }
-                        // Only allow downward drag from lower area
-                        if (change.position.y > 100 && dragAmount.y > 0) {
-                            offsetY = (offsetY + dragAmount.y).coerceAtLeast(0f)
-                        }
-                    }
-                }
                 .padding(horizontal = 25.dp)
                 .padding(top = 80.dp)
                 .padding(bottom = 40.dp),
@@ -207,12 +224,20 @@ fun MusicViewScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Slider(
-                        value = progress,
+                        value = sliderValue,
                         onValueChange = { newValue ->
-                            val newPosition = (newValue * duration).toLong()
-                            songManagerViewModel.seekTo(newPosition)
+                            isSliderDragging = true
+                            sliderValue = newValue
+                        },
+                        onValueChangeFinished = {
+                            isSliderDragging = false
+                            if (duration > 0) {
+                                val newPosition = (sliderValue * duration).toLong()
+                                songManagerViewModel.seekTo(newPosition)
+                            }
                         },
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = duration > 0,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.White,
                             activeTrackColor = Color.White,

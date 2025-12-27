@@ -6,9 +6,13 @@ import com.music.android.data.api.RetrofitClient
 import com.music.android.data.model.Song
 import com.music.android.data.repository.AuthRepository
 import com.music.android.domain.player.MediaPlayerService
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class SongManagerViewModel(
@@ -52,10 +56,13 @@ class SongManagerViewModel(
         loadSongs()
     }
     
+    private var positionUpdateJob: Job? = null
+    
     private fun setupPlayerListener() {
         mediaPlayerService.addListener(object : androidx.media3.common.Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 _isPlaying.value = isPlaying
+                updatePositionPeriodically(isPlaying)
             }
             
             override fun onPositionDiscontinuity(
@@ -64,8 +71,30 @@ class SongManagerViewModel(
                 reason: Int
             ) {
                 _currentPosition.value = mediaPlayerService.currentPosition
+                _duration.value = mediaPlayerService.duration
+            }
+            
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == androidx.media3.common.Player.STATE_READY) {
+                    _duration.value = mediaPlayerService.duration
+                }
             }
         })
+        
+        // Start position updates if already playing
+        updatePositionPeriodically(_isPlaying.value)
+    }
+    
+    private fun updatePositionPeriodically(isPlaying: Boolean) {
+        positionUpdateJob?.cancel()
+        if (isPlaying) {
+            positionUpdateJob = viewModelScope.launch {
+                while (isActive && _isPlaying.value) {
+                    _currentPosition.value = mediaPlayerService.currentPosition
+                    delay(200) // Update every 200ms
+                }
+            }
+        }
     }
     
     fun loadSongs() {
@@ -216,6 +245,7 @@ class SongManagerViewModel(
     
     override fun onCleared() {
         super.onCleared()
+        positionUpdateJob?.cancel()
         mediaPlayerService.release()
     }
 }
