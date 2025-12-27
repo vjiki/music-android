@@ -6,7 +6,7 @@ import retrofit2.http.*
 
 interface ApiService {
     companion object {
-        const val BASE_URL = "https://music-back-g2u6.onrender.com"
+        const val BASE_URL = "https://music-bird.up.railway.app"
     }
 
     // Auth
