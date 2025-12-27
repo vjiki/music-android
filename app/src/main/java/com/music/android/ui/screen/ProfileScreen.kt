@@ -37,7 +37,6 @@ fun ProfileScreen(
     val likedSongs = librarySongs.filter { it.isLiked }
     val dislikedSongs = librarySongs.filter { it.isDisliked }
     
-    var showSettings by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
@@ -47,7 +46,7 @@ fun ProfileScreen(
                     containerColor = Color.Black
                 ),
                 actions = {
-                    IconButton(onClick = { showSettings = true }) {
+                    IconButton(onClick = { navController.navigate("settings") }) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Settings",
@@ -168,15 +167,7 @@ fun ProfileScreen(
         }
     }
     
-    // Settings sheet
-    if (showSettings) {
-        SettingsScreen(
-            navController = navController,
-            authViewModel = authViewModel,
-            songManagerViewModel = songManagerViewModel,
-            onDismiss = { showSettings = false }
-        )
-    }
+    // Settings is now handled via navigation
 }
 
 @Composable

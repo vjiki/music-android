@@ -18,6 +18,9 @@ import com.music.android.domain.player.MediaPlayerService
 import com.music.android.ui.screen.HomeScreen
 import com.music.android.ui.screen.ProfileScreen
 import com.music.android.ui.screen.SamplesScreen
+import com.music.android.ui.screen.SearchScreen
+import com.music.android.ui.screen.SettingsScreen
+import com.music.android.ui.screen.MusicViewScreen
 import com.music.android.ui.theme.MusicAndroidTheme
 import com.music.android.ui.viewmodel.AuthViewModel
 import com.music.android.ui.viewmodel.SongManagerViewModel
@@ -82,6 +85,25 @@ fun MusicApp(
             ProfileScreen(
                 navController = navController,
                 authViewModel = authViewModel,
+                songManagerViewModel = songManagerViewModel
+            )
+        }
+        composable("search") {
+            SearchScreen(
+                navController = navController,
+                songManagerViewModel = songManagerViewModel
+            )
+        }
+        composable("settings") {
+            SettingsScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                songManagerViewModel = songManagerViewModel
+            )
+        }
+        composable("music") {
+            MusicViewScreen(
+                navController = navController,
                 songManagerViewModel = songManagerViewModel
             )
         }

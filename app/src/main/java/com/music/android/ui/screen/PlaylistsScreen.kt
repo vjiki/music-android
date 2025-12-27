@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.music.android.data.model.PlaylistKind
+import com.music.android.ui.component.BrokenHeartIconFilled
 import com.music.android.ui.viewmodel.SongManagerViewModel
 import kotlinx.coroutines.launch
 
@@ -47,7 +48,7 @@ fun PlaylistsScreen(
             kind = PlaylistKind.DISLIKED,
             title = "Disliked Songs",
             subtitle = "${dislikedSongs.size} songs",
-            icon = Icons.Default.Block,
+            icon = Icons.Default.FavoriteBorder, // Will be replaced with broken heart in UI
             gradient = listOf(Color.Red, Color(0xFFFF8C00)),
             coverUrl = dislikedSongs.firstOrNull()?.cover
         )
@@ -160,18 +161,30 @@ fun PlaylistTile(
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(
-                    imageVector = playlist.icon,
-                    contentDescription = null,
-                    tint = Color.White,
+                Box(
                     modifier = Modifier
                         .size(32.dp)
                         .background(
                             Color.White.copy(alpha = 0.18f),
                             RoundedCornerShape(16.dp)
                         )
-                        .padding(8.dp)
-                )
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (playlist.kind == PlaylistKind.DISLIKED) {
+                        BrokenHeartIconFilled(
+                            tint = Color.White,
+                            size = 16.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = playlist.icon,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
                 Column {
                     Text(
                         text = playlist.title,

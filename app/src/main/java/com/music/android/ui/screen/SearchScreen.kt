@@ -19,14 +19,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.music.android.data.model.Song
+import com.music.android.ui.component.BrokenHeartIconFilled
 import com.music.android.ui.viewmodel.SongManagerViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    onDismiss: () -> Unit,
+    navController: NavController,
     songManagerViewModel: SongManagerViewModel
 ) {
     var searchText by remember { mutableStateOf("") }
@@ -41,72 +43,76 @@ fun SearchScreen(
         }
     }
     
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black),
-            shape = RoundedCornerShape(0.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Black
-            )
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Search bar
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = Color.White.copy(alpha = 0.6f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextField(
-                        value = searchText,
-                        onValueChange = { searchText = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("Search", color = Color.White.copy(alpha = 0.6f)) },
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = {})
-                    )
-                    IconButton(onClick = onDismiss) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Black
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
                             tint = Color.White
                         )
                     }
                 }
-                
-                // Results
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(0.dp)
-                ) {
-                    items(filteredSongs) { song ->
-                        TrackRow(
-                            song = song,
-                            onClick = {
-                                songManagerViewModel.playSong(song, filteredSongs)
-                                onDismiss()
-                            }
-                        )
-                    }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .padding(paddingValues)
+        ) {
+            // Search bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = Color.White.copy(alpha = 0.6f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                TextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Search", color = Color.White.copy(alpha = 0.6f)) },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = {})
+                )
+            }
+            
+            // Results
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                items(filteredSongs) { song ->
+                    TrackRow(
+                        song = song,
+                        onClick = {
+                            songManagerViewModel.playSong(song, filteredSongs)
+                            navController.popBackStack()
+                        }
+                    )
                 }
             }
         }
@@ -154,11 +160,9 @@ fun TrackRow(
                 modifier = Modifier.size(32.dp)
             )
         } else if (song.isDisliked) {
-            Icon(
-                imageVector = Icons.Default.Block,
-                contentDescription = "Disliked",
+            BrokenHeartIconFilled(
                 tint = Color.Red,
-                modifier = Modifier.size(32.dp)
+                size = 32.dp
             )
         }
         IconButton(onClick = { /* Options */ }) {

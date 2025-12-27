@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.music.android.ui.component.*
+import com.music.android.ui.component.BrokenHeartIcon
+import com.music.android.ui.component.BrokenHeartIconFilled
 import com.music.android.ui.viewmodel.AuthViewModel
 import com.music.android.ui.viewmodel.SongManagerViewModel
 
@@ -28,7 +30,6 @@ fun HomeScreen(
     val currentSong by songManagerViewModel.currentSong.collectAsState()
     val isPlaying by songManagerViewModel.isPlaying.collectAsState()
 
-    var showSearch by remember { mutableStateOf(false) }
     var showPlaylists by remember { mutableStateOf(false) }
     var showMessages by remember { mutableStateOf(false) }
 
@@ -40,7 +41,7 @@ fun HomeScreen(
                         song = currentSong!!,
                         isPlaying = isPlaying,
                         songManagerViewModel = songManagerViewModel,
-                        onExpand = { }
+                        onExpand = { navController.navigate("music") }
                     )
                 }
                 BottomNavigationBar(navController, currentRoute = "home")
@@ -62,19 +63,24 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Spacer(modifier = Modifier.weight(1f))
-                // Dislike button
+                // Dislike button (broken heart)
                 currentSong?.let { song ->
                     val dislikeIconSize = songManagerViewModel.dislikeIconSize(song)
                     IconButton(
                         onClick = { songManagerViewModel.toggleDislike(song) },
                         modifier = Modifier.size((dislikeIconSize + 8).dp)
                     ) {
-                        Icon(
-                            imageVector = if (song.isDisliked) Icons.Default.Block else Icons.Default.ThumbDown,
-                            contentDescription = "Dislike",
-                            tint = if (song.isDisliked) Color.Red else Color.White,
-                            modifier = Modifier.size(dislikeIconSize.dp)
-                        )
+                        if (song.isDisliked) {
+                            BrokenHeartIconFilled(
+                                tint = Color.Red,
+                                size = dislikeIconSize.dp
+                            )
+                        } else {
+                            BrokenHeartIcon(
+                                tint = Color.White,
+                                size = dislikeIconSize.dp
+                            )
+                        }
                     }
                 }
 
@@ -104,7 +110,7 @@ fun HomeScreen(
                     )
                 }
 
-                IconButton(onClick = { showSearch = true }) {
+                IconButton(onClick = { navController.navigate("search") }) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
@@ -150,12 +156,7 @@ fun HomeScreen(
         }
     }
 
-    if (showSearch) {
-        SearchScreen(
-            onDismiss = { showSearch = false },
-            songManagerViewModel = songManagerViewModel
-        )
-    }
+    // Search is now handled via navigation
 
     if (showPlaylists) {
         PlaylistsScreen(

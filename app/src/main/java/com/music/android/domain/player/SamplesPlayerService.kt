@@ -17,6 +17,9 @@ class SamplesPlayerService(context: Context) {
     private var videoReadyListener: Player.Listener? = null
     private val cacheService = CacheService.getInstance(context)
     
+    // Callback to pause media player when samples start playing
+    var onPlayCallback: (() -> Unit)? = null
+    
     var currentShort: ShortModel? = null
         private set
     
@@ -123,6 +126,8 @@ class SamplesPlayerService(context: Context) {
     }
     
     fun play() {
+        // Pause media player if it's playing
+        onPlayCallback?.invoke()
         player.play()
     }
     

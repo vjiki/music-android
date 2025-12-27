@@ -40,6 +40,13 @@ class SongManagerViewModel(
     private var currentIndex: Int? = null
     private var shuffledPlaylist: List<Song> = emptyList()
     
+    // Reference to samples player service for mutual exclusivity
+    private var samplesPlayerService: com.music.android.domain.player.SamplesPlayerService? = null
+    
+    fun setSamplesPlayerService(service: com.music.android.domain.player.SamplesPlayerService?) {
+        samplesPlayerService = service
+    }
+    
     init {
         setupPlayerListener()
         loadSongs()
@@ -84,6 +91,13 @@ class SongManagerViewModel(
         // Only play if song has audio URL
         if (song.audioUrl.isNullOrEmpty()) return
         
+        // Pause samples player if it's playing
+        samplesPlayerService?.let {
+            if (it.isPlaying) {
+                it.pause()
+            }
+        }
+        
         val targetPlaylist = playlist ?: _playlist.value
         val finalPlaylist = if (targetPlaylist.isEmpty() || !targetPlaylist.contains(song)) {
             targetPlaylist + song
@@ -103,7 +117,19 @@ class SongManagerViewModel(
         if (_isPlaying.value) {
             mediaPlayerService.pause()
         } else {
+            // Pause samples player if it's playing
+            samplesPlayerService?.let {
+                if (it.isPlaying) {
+                    it.pause()
+                }
+            }
             mediaPlayerService.play()
+        }
+    }
+    
+    fun pause() {
+        if (_isPlaying.value) {
+            mediaPlayerService.pause()
         }
     }
     

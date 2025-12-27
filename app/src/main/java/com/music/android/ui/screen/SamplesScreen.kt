@@ -30,6 +30,8 @@ import coil.compose.AsyncImage
 import com.music.android.data.model.ShortModel
 import com.music.android.data.api.RetrofitClient
 import com.music.android.domain.player.SamplesPlayerService
+import com.music.android.ui.component.BrokenHeartIcon
+import com.music.android.ui.component.BrokenHeartIconFilled
 import com.music.android.ui.viewmodel.SongManagerViewModel
 import kotlinx.coroutines.launch
 
@@ -39,7 +41,14 @@ fun SamplesScreen(
     songManagerViewModel: SongManagerViewModel
 ) {
     val context = LocalContext.current
-    val samplesPlayer = remember { SamplesPlayerService(context) }
+    val samplesPlayer = remember { 
+        SamplesPlayerService(context).apply {
+            // Set callback to pause media player when samples start playing
+            onPlayCallback = {
+                songManagerViewModel.pause()
+            }
+        }
+    }
     
     var shorts by remember { mutableStateOf<List<ShortModel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -47,7 +56,11 @@ fun SamplesScreen(
     var lastPlayedIndex by remember { mutableStateOf(-1) }
     val scope = rememberCoroutineScope()
     
+    // Pause media player when samples screen is opened and load shorts
     LaunchedEffect(Unit) {
+        songManagerViewModel.pause()
+        songManagerViewModel.setSamplesPlayerService(samplesPlayer)
+        
         scope.launch {
             try {
                 val userId = songManagerViewModel.authRepository.currentUserId
@@ -80,6 +93,7 @@ fun SamplesScreen(
     // Cleanup on dispose
     DisposableEffect(Unit) {
         onDispose {
+            songManagerViewModel.setSamplesPlayerService(null)
             samplesPlayer.stop()
             samplesPlayer.release()
         }
@@ -226,12 +240,12 @@ fun ShortCard(
             )
         }
         
-        // Bottom info
+        // Bottom info - positioned above bottom navigation bar
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(16.dp)
-                .padding(bottom = 100.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 50.dp) // Position just above bottom navigation bar
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -319,7 +333,7 @@ fun ShortCard(
                 )
             }
             
-            // Dislike button
+            // Dislike button (broken heart)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -333,11 +347,17 @@ fun ShortCard(
                             CircleShape
                         )
                 ) {
-                    Icon(
-                        imageVector = if (short.isDisliked) Icons.Default.Block else Icons.Default.ThumbDown,
-                        contentDescription = "Dislike",
-                        tint = if (short.isDisliked) Color.Red else Color.White
-                    )
+                    if (short.isDisliked) {
+                        BrokenHeartIconFilled(
+                            tint = Color.Red,
+                            size = 28.dp
+                        )
+                    } else {
+                        BrokenHeartIcon(
+                            tint = Color.White,
+                            size = 28.dp
+                        )
+                    }
                 }
                 Text(
                     text = "${short.dislikesCount}",

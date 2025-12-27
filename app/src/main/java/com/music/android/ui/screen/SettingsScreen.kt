@@ -31,8 +31,7 @@ import com.music.android.ui.viewmodel.SongManagerViewModel
 fun SettingsScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    songManagerViewModel: SongManagerViewModel,
-    onDismiss: () -> Unit
+    songManagerViewModel: SongManagerViewModel
 ) {
     var searchText by remember { mutableStateOf("") }
     var showLoginView by remember { mutableStateOf(false) }
@@ -52,7 +51,7 @@ fun SettingsScreen(
                     containerColor = Color.Black
                 ),
                 navigationIcon = {
-                    IconButton(onClick = onDismiss) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
